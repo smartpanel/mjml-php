@@ -4,9 +4,11 @@ namespace Spatie\Mjml;
 
 class MjmlResult
 {
-    public function __construct(
-        protected array $rawResult
-    ) {
+    protected array $rawResult;
+
+    public function __construct(array $rawResult)
+    {
+        $this->rawResult = $rawResult;
     }
 
     public function html(): string
@@ -24,16 +26,16 @@ class MjmlResult
         return $this->rawResult;
     }
 
+    public function hasErrors(): bool
+    {
+        return count($this->errors()) > 0;
+    }
+
     /** @return array<MjmlError> */
     public function errors(): array
     {
         return array_map(function (array $errorProperties) {
             return new MjmlError($errorProperties);
         }, $this->rawResult['errors'] ?? []);
-    }
-
-    public function hasErrors(): bool
-    {
-        return count($this->errors()) > 0;
     }
 }

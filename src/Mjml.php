@@ -3,8 +3,6 @@
 namespace Spatie\Mjml;
 
 use Spatie\Mjml\Exceptions\CouldNotConvertMjml;
-use Spatie\Mjml\Exceptions\SidecarPackageUnavailable;
-use Spatie\MjmlSidecar\MjmlFunction;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -19,13 +17,15 @@ class Mjml
 
     protected bool $minify = false;
 
-    protected ValidationLevel $validationLevel;
+    protected string $validationLevel;
+
+    protected const LEVEL_STRICT = 'strict';
+    protected const LEVEL_SOFT = 'soft';
+    protected const LEVEL_SKIP = 'skip';
 
     protected string $filePath = '.';
 
     protected string $workingDirectory;
-
-    protected bool $sidecar = false;
 
     public static function new(): self
     {
@@ -34,7 +34,7 @@ class Mjml
 
     protected function __construct()
     {
-        $this->validationLevel = ValidationLevel::Soft;
+        $this->validationLevel = self::LEVEL_SOFT;
 
         $this->workingDirectory = realpath(dirname(__DIR__).'/bin');
     }
@@ -72,14 +72,7 @@ class Mjml
         return $this;
     }
 
-    public function sidecar(bool $sidecar = true): self
-    {
-        $this->sidecar = $sidecar;
-
-        return $this;
-    }
-
-    public function validationLevel(ValidationLevel $validationLevel): self
+    public function validationLevel(string $validationLevel): self
     {
         $this->validationLevel = $validationLevel;
 
@@ -104,7 +97,7 @@ class Mjml
     {
         try {
             $this->convert($mjml);
-        } catch (CouldNotConvertMjml) {
+        } catch (CouldNotConvertMjml $ex) {
             return false;
         }
 
@@ -115,18 +108,24 @@ class Mjml
     {
         try {
             $result = $this->convert($mjml);
-        } catch (CouldNotConvertMjml) {
+        } catch (CouldNotConvertMjml $ex) {
             return false;
         }
 
         return ! $result->hasErrors();
     }
 
+    /**
+     * @throws CouldNotConvertMjml
+     */
     public function toHtml(string $mjml, array $options = []): string
     {
         return $this->convert($mjml, $options)->html();
     }
 
+    /**
+     * @throws CouldNotConvertMjml
+     */
     public function convert(string $mjml, array $options = []): MjmlResult
     {
         $arguments = [
@@ -134,9 +133,7 @@ class Mjml
             $this->configOptions($options),
         ];
 
-        $resultString = $this->sidecar
-            ? $this->getSideCarResult($arguments)
-            : $this->getLocalResult($arguments);
+        $resultString = $this->getLocalResult($arguments);
 
         $resultString = $this->checkForDeprecationWarning($resultString);
 
@@ -187,23 +184,11 @@ class Mjml
             'ignoreIncludes' => $this->ignoreIncludes,
             'beautify' => $this->beautify,
             'minify' => $this->minify,
-            'validationLevel' => $this->validationLevel->value,
+            'validationLevel' => $this->validationLevel,
             'filePath' => $this->filePath,
         ];
 
         return array_merge($defaults, $overrides);
-    }
-
-    protected function getSideCarResult(array $arguments): string
-    {
-        if (! class_exists(MjmlFunction::class)) {
-            throw SidecarPackageUnavailable::make();
-        }
-
-        return MjmlFunction::execute([
-            'mjml' => $arguments[0],
-            'options' => $arguments[1],
-        ])->body();
     }
 
     protected function getLocalResult(array $arguments): string
