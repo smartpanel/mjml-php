@@ -38,7 +38,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "SmartPanel\\Mjml\\MjmlServiceProvider"
+                "SmartPanel\\Mjml\\Providers\\MjmlServiceProvider"
             ]
         }
     }
