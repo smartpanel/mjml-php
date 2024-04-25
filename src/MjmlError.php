@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Mjml;
+namespace SmartPanel\Mjml;
 
 class MjmlError
 {

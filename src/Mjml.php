@@ -1,8 +1,8 @@
 <?php
 
-namespace Spatie\Mjml;
+namespace SmartPanel\Mjml;
 
-use Spatie\Mjml\Exceptions\CouldNotConvertMjml;
+use SmartPanel\Mjml\Exceptions\CouldNotConvertMjml;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;

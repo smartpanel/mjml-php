@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Mjml\Exceptions;
+namespace SmartPanel\Mjml\Exceptions;
 
 use Exception;
 
