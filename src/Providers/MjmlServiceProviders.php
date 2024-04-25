@@ -4,7 +4,7 @@ namespace SmartPanel\Mjml\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class MjmlServiceProviders extends ServiceProvider
+class MjmlServiceProvider extends ServiceProvider
 {
     public function boot()
     {
