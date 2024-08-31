@@ -164,7 +164,7 @@ class Mjml
             '/opt/homebrew/bin',
         ];
 
-        $nodePathFromConfig = config('mjml.node_path');
+        $nodePathFromConfig = config('mjml.node_path', '');
 
         if ($nodePathFromConfig) {
             array_unshift($extraDirectories, $nodePathFromConfig);
