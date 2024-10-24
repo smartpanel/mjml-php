@@ -17,24 +17,22 @@ class Mjml
 
     protected bool $minify = false;
 
-    protected string $validationLevel;
-
-    protected const LEVEL_STRICT = 'strict';
-    protected const LEVEL_SOFT = 'soft';
-    protected const LEVEL_SKIP = 'skip';
+    protected ValidationLevel $validationLevel;
 
     protected string $filePath = '.';
 
     protected string $workingDirectory;
 
+    protected bool $sidecar = false;
+
     public static function new(): self
     {
-        return new static();
+        return new static;
     }
 
     protected function __construct()
     {
-        $this->validationLevel = self::LEVEL_SOFT;
+        $this->validationLevel = ValidationLevel::Soft;
 
         $this->workingDirectory = realpath(dirname(__DIR__).'/bin');
     }
@@ -72,7 +70,7 @@ class Mjml
         return $this;
     }
 
-    public function validationLevel(string $validationLevel): self
+    public function validationLevel(ValidationLevel $validationLevel): self
     {
         $this->validationLevel = $validationLevel;
 
@@ -97,7 +95,7 @@ class Mjml
     {
         try {
             $this->convert($mjml);
-        } catch (CouldNotConvertMjml $ex) {
+        } catch (CouldNotConvertMjml) {
             return false;
         }
 
@@ -108,7 +106,7 @@ class Mjml
     {
         try {
             $result = $this->convert($mjml);
-        } catch (CouldNotConvertMjml $ex) {
+        } catch (CouldNotConvertMjml) {
             return false;
         }
 
@@ -171,9 +169,9 @@ class Mjml
         }
 
         return [
-            (new ExecutableFinder())->find('node', 'node', $extraDirectories),
+            (new ExecutableFinder)->find('node', 'node', $extraDirectories),
             'mjml.mjs',
-            json_encode(array_values($arguments)),
+            base64_encode(json_encode(array_values($arguments))),
         ];
     }
 
@@ -184,7 +182,7 @@ class Mjml
             'ignoreIncludes' => $this->ignoreIncludes,
             'beautify' => $this->beautify,
             'minify' => $this->minify,
-            'validationLevel' => $this->validationLevel,
+            'validationLevel' => $this->validationLevel->value,
             'filePath' => $this->filePath,
         ];
 
@@ -204,6 +202,8 @@ class Mjml
             throw new ProcessFailedException($process);
         }
 
-        return $process->getOutput();
+        $items = explode("\n", $process->getOutput());
+
+        return base64_decode(end($items));
     }
 }
