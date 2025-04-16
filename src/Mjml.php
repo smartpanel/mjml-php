@@ -70,6 +70,13 @@ class Mjml
         return $this;
     }
 
+    public function sidecar(bool $sidecar = true): self
+    {
+        $this->sidecar = $sidecar;
+
+        return $this;
+    }
+
     public function validationLevel(ValidationLevel $validationLevel): self
     {
         $this->validationLevel = $validationLevel;
@@ -113,17 +120,11 @@ class Mjml
         return ! $result->hasErrors();
     }
 
-    /**
-     * @throws CouldNotConvertMjml
-     */
     public function toHtml(string $mjml, array $options = []): string
     {
         return $this->convert($mjml, $options)->html();
     }
 
-    /**
-     * @throws CouldNotConvertMjml
-     */
     public function convert(string $mjml, array $options = []): MjmlResult
     {
         $arguments = [
@@ -191,10 +192,14 @@ class Mjml
 
     protected function getLocalResult(array $arguments): string
     {
+        $mjmlTemplate = $arguments[0];
+        $arguments[0] = '-';
+
         $process = new Process(
             $this->getCommand($arguments),
             $this->workingDirectory,
         );
+        $process->setInput(base64_encode($mjmlTemplate));
 
         $process->run();
 
